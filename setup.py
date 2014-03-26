@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='django-query-parameters',
-    version='0.1.1',
+    version='0.1.2',
     author='Jean-Marc Skopek',
     author_email='jean-marc@skopek.ca',
     packages=['query_parameters','query_parameters.templatetags'],
