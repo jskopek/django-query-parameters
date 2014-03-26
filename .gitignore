@@ -3,3 +3,5 @@
 *.pyc
 local_settings.py
 venv
+MANIFEST
+dist
