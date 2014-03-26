@@ -3,12 +3,12 @@ django-query-parameters
 
 Adds two template tags that simplify the manipulation of GET parameters on a querystring. Allows easy addition, manipulation, and deletion of parameters onto an existing querystring.
 
-The module is comprised of two template tags: `set_query_parameters` and `del_query_parameters`. 
+The module is comprised of two template tags: ``set_query_parameters`` and ``del_query_parameters``. 
 
 set_query_parameters
 --------------------
 
-Takes a 1+ list of key=value pairs and generates an updated querystring that includes those pairs. If a key does not already exist in the querystring, it will be added. If a key exists, it will be updated with the new value
+Takes a 1+ list of ``key=value`` pairs and generates an updated querystring that includes those pairs. If a key does not already exist in the querystring, it will be added. If a key exists, it will be updated with the new value. For example::
 
     # current page is http://localhost/?page=1&limit=20
     {% load query_parameters %}
@@ -17,7 +17,7 @@ Takes a 1+ list of key=value pairs and generates an updated querystring that inc
 del_query_parameters
 --------------------
 
-Takes a 1+ list of keys and generates an updated querystring that removes those keys.
+Takes a 1+ list of keys and generates an updated querystring that removes those keys. If a key does not exist in the query string, it will be ignored. For example::
 
     # current page is http://localhost/?page=1&limit=20
     {% load query_parameters %}
