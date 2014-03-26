@@ -5,30 +5,35 @@ register = template.Library()
 
 class QueryStringSetNode(template.Node):
     def __init__(self, parameter_dict):
-        self.parameter_dict = parameter_dict
+        self._parameter_dict = parameter_dict
+
+    def contextual_parameter_dict(self, context):
+        value_parameter_dict = {}
+        for key, value in self._parameter_dict.items():
+            value_parameter_dict[get_value(key,context)] = get_value(value,context)
+        return value_parameter_dict
 
     def render(self, context):
         qstring = get_query_string(context)
 
-        value_parameter_dict = {}
-        for key, value in self.parameter_dict.items():
-            value_parameter_dict[get_value(key,context)] = get_value(value,context)
-
         existing_query_dict = QueryDict(qstring).copy()
-        existing_query_dict.update(value_parameter_dict)
+        existing_query_dict.update(self.contextual_parameter_dict(context))
         return existing_query_dict.urlencode()
 
 class QueryStringDeleteNode(template.Node):
     def __init__(self, parameter_delete_list):
-        self.parameter_delete_list = parameter_delete_list
+        self._parameter_delete_list = parameter_delete_list
+
+    def contextual_parameter_delete_list(self, context):
+        parameters = map(lambda key: get_value(key, context), self._parameter_delete_list)
+        return parameters
 
     def render(self, context):
         qstring = get_query_string(context)
         existing_query_dict = QueryDict(qstring).copy()
         print existing_query_dict
         
-        parameters = map(lambda key: get_value(key, context), self.parameter_delete_list)
-        for parameter in parameters:
+        for parameter in self.contextual_parameter_delete_list(context):
             if existing_query_dict.get(parameter):
                 del existing_query_dict[parameter]
         return existing_query_dict.urlencode()
