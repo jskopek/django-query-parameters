@@ -29,7 +29,7 @@ class QueryStringDeleteNode(template.Node):
         return existing_query_dict.urlencode()
 
 @register.tag
-def set_query_parameter(parser, token):
+def set_query_parameters(parser, token):
     try:
         tag_name, key, value = token.split_contents()
     except ValueError:
@@ -38,7 +38,7 @@ def set_query_parameter(parser, token):
     return QueryStringSetNode({'setting':'this'})
 
 @register.tag
-def del_query_parameter(parser, token):
+def del_query_parameters(parser, token):
     params = token.split_contents()[1:]
     return QueryStringDeleteNode(params)
 
