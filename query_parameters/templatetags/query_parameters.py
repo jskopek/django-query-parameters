@@ -4,14 +4,18 @@ from django.http import QueryDict
 register = template.Library()
 
 class QueryStringSetNode(template.Node):
-    def __init__(self, query_dict):
-        self.query_dict = query_dict
+    def __init__(self, parameter_dict):
+        self.parameter_dict = parameter_dict
 
     def render(self, context):
         qstring = get_query_string(context)
 
+        value_parameter_dict = {}
+        for key, value in self.parameter_dict.items():
+            value_parameter_dict[get_value(key,context)] = get_value(value,context)
+
         existing_query_dict = QueryDict(qstring).copy()
-        existing_query_dict.update(self.query_dict)
+        existing_query_dict.update(value_parameter_dict)
         return existing_query_dict.urlencode()
 
 class QueryStringDeleteNode(template.Node):
@@ -21,6 +25,7 @@ class QueryStringDeleteNode(template.Node):
     def render(self, context):
         qstring = get_query_string(context)
         existing_query_dict = QueryDict(qstring).copy()
+        print existing_query_dict
         
         parameters = map(lambda key: get_value(key, context), self.parameter_delete_list)
         for parameter in parameters:
@@ -31,11 +36,13 @@ class QueryStringDeleteNode(template.Node):
 @register.tag
 def set_query_parameters(parser, token):
     try:
-        tag_name, key, value = token.split_contents()
+        key_value_pairs = token.split_contents()[1:]
+        key_value_dict = dict(key_value_pair.split('=') for key_value_pair in key_value_pairs)
     except ValueError:
-        raise template.TemplateSyntaxError('%r tag requires two arguments' % token.contents.split()[0])
+        raise template.TemplateSyntaxError('%r tag requires arguments to be in `key=value` pairs' % token.contents.split()[0])
 
-    return QueryStringSetNode({'setting':'this'})
+    print key_value_dict
+    return QueryStringSetNode(key_value_dict)
 
 @register.tag
 def del_query_parameters(parser, token):
@@ -52,6 +59,7 @@ def get_query_string(context):
         return request.GET.urlencode()
 
 def get_value(key, context):
+    print 'get_value: %s' % key
     try:
         value = template.Variable(key)
         value = value.resolve(context)

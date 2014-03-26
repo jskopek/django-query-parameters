@@ -2,5 +2,7 @@
 
 <h1>Testing Django-Query-Parameters</h1>
 
-{% set_query_parameters 'test_key' 'test_value' %}
-{% del_query_parameters 'test' %}
+{% with 'blah' as example_value %}
+<p>{% set_query_parameters hello=example_value this=thing asdf=no %}</p>
+<p>{% del_query_parameters test hello %}</p>
+{% endwith %}
