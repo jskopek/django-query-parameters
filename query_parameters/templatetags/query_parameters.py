@@ -1,5 +1,7 @@
 from django import template
 from django.http import QueryDict
+from django.conf import settings
+import re
 
 register = template.Library()
 
@@ -20,11 +22,21 @@ def set_query_parameters(parser, token):
     except ValueError:
         raise template.TemplateSyntaxError('%r tag requires arguments to be in `key=value` pairs' % token.contents.split()[0])
 
-    return QueryStringSetNode(key_value_dict)
+    # check to see if a special variable output key has been passed (default to `as`); 
+    # if so, we will store the result in the context variable define by the value
+    VARIABLE_OUTPUT_KEY = getattr(settings, 'QUERY_PARAMETERS_VARIABLE_OUTPUT_KEY', 'as')
+    if key_value_dict.get(VARIABLE_OUTPUT_KEY):
+        as_var = key_value_dict[VARIABLE_OUTPUT_KEY]
+        del key_value_dict[VARIABLE_OUTPUT_KEY]
+    else:
+        as_var = None
+
+    return QueryStringSetNode(key_value_dict, as_var)
 
 class QueryStringSetNode(template.Node):
-    def __init__(self, parameter_dict):
-        self._parameter_dict = parameter_dict
+    def __init__(self, parameter_dict, as_var):
+        self.parameter_dict = parameter_dict
+        self.as_var = as_var
 
     def contextual_parameter_dict(self, context):
         """
@@ -37,7 +49,7 @@ class QueryStringSetNode(template.Node):
         """
 
         value_parameter_dict = {}
-        for key, value in self._parameter_dict.items():
+        for key, value in self.parameter_dict.items():
             value_parameter_dict[get_value(key,context)] = get_value(value,context)
         return value_parameter_dict
 
@@ -46,8 +58,16 @@ class QueryStringSetNode(template.Node):
         existing_query_dict = QueryDict(query_string).copy()
         for key, value in self.contextual_parameter_dict(context).items():
             existing_query_dict[key] = value
-        #existing_query_dict.update(self.contextual_parameter_dict(context))
-        return existing_query_dict.urlencode()
+
+        result = existing_query_dict.urlencode()
+
+        if self.as_var:
+            # if we are storing result as a context property, do so and reutrn a blank string
+            context[self.as_var] = result
+            return ''
+        else:
+            # ... otherwise return the value
+            return result
 
 # DELETING PARAMETERS
 @register.tag
@@ -60,11 +80,23 @@ def del_query_parameters(parser, token):
     """
 
     params = token.split_contents()[1:]
-    return QueryStringDeleteNode(params)
+
+    # check to see if a special variable output key has been passed (default to `as`); 
+    # if so, we will store the result in the context variable define by the value
+    as_var = None
+    VARIABLE_OUTPUT_KEY = getattr(settings, 'QUERY_PARAMETERS_VARIABLE_OUTPUT_KEY', 'as')
+    for val in list(params):
+        match = re.match('%s=(\w+)' % VARIABLE_OUTPUT_KEY, val)
+        if match:
+            as_var = match.group(1)
+            params.pop(params.index(val))
+
+    return QueryStringDeleteNode(params, as_var)
 
 class QueryStringDeleteNode(template.Node):
-    def __init__(self, parameter_delete_list):
-        self._parameter_delete_list = parameter_delete_list
+    def __init__(self, parameter_delete_list, as_var):
+        self.parameter_delete_list = parameter_delete_list
+        self.as_var = as_var
 
     def contextual_parameter_delete_list(self, context):
         """
@@ -75,7 +107,7 @@ class QueryStringDeleteNode(template.Node):
         first_property = 'test'
         [first_property,'second_property'] => ['test','second_property']
         """
-        parameters = map(lambda key: get_value(key, context), self._parameter_delete_list)
+        parameters = map(lambda key: get_value(key, context), self.parameter_delete_list)
         return parameters
 
     def render(self, context):
@@ -85,7 +117,17 @@ class QueryStringDeleteNode(template.Node):
         for parameter in self.contextual_parameter_delete_list(context):
             if existing_query_dict.get(parameter):
                 del existing_query_dict[parameter]
-        return existing_query_dict.urlencode()
+
+        result = existing_query_dict.urlencode()
+
+        if self.as_var:
+            # if we are storing result as a context property, do so and reutrn a blank string
+            context[self.as_var] = result
+            return ''
+        else:
+            # ... otherwise return the value
+            return result
+
 
 # HELPER METHDOS
 def get_query_string(context):

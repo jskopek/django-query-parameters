@@ -54,6 +54,19 @@ class SetQueryParametersTestCase(TestCase):
         )
         self.assertEqual(result, 'prop1=val1_modified&prop2=val2&prop3=val3')
 
+    def test_save_in_context(self):
+        t = Template(
+                '{% load query_parameters %}'
+                '{% set_query_parameters prop1=val1 as=result %}'
+            )
+        request = HttpRequest()
+        request.GET = QueryDict('prop2=val2')
+
+        c = RequestContext(request)
+        result = t.render(c)
+        self.assertEqual(result, '')
+        self.assertEqual(c['result'], 'prop1=val1&prop2=val2')
+
     def template_generator(self, query_string, set_query_parameters_value):
         """
         Helper method to simplify generating a template with a mock `query_string` and `set_query_parameters_value`
@@ -106,6 +119,19 @@ class DelQueryParametersTestCase(TestCase):
                 del_query_parameters_value=''
         )
         self.assertEqual(result, 'prop1=value1')
+
+    def test_delete_in_context(self):
+        t = Template(
+                '{% load query_parameters %}'
+                '{% del_query_parameters prop2 as=a_result %}'
+            )
+        request = HttpRequest()
+        request.GET = QueryDict('prop1=val1&prop2=val2')
+
+        c = RequestContext(request)
+        result = t.render(c)
+        self.assertEqual(result, '')
+        self.assertEqual(c['a_result'], 'prop1=val1')
 
     def template_generator(self, query_string, del_query_parameters_value):
         """

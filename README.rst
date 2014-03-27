@@ -39,3 +39,23 @@ Include the project in the ``INSTALLED_APPS`` list in your project's ``settings.
     INSTALLED_APPS = (..., 'query_parameters', ...)
 
 
+
+Storing the output in the template context
+==========================================
+
+By default, both template tags output the result directly. If an optional ``as`` key is specified, the results will be stored in a context variable instead. For example::
+
+    {% set_query_parameters color=red as=next_page %}
+    <a href="?{{ next_page }}">Next Page</a>
+    
+    {% del_query_parameters color size as=reset_filters %}
+    <a href="?{{ reset_filters }}">Reset Filters</a>
+    
+The ``as`` key may be modified in Django's ``settings.py`` file::
+
+    QUERY_PARAMETERS_VARIABLE_OUTPUT_KEY = 'output'
+    
+    ...
+    
+    {% set_query_parameters color=red output=next_page %}
+
