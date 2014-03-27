@@ -40,6 +40,14 @@ class SetQueryParametersTestCase(TestCase):
         )
         self.assertEqual(result, 'prop1=val1&prop2=val2&prop3=val3')
 
+    def test_illegal_variable_name(self):
+        result = self.template_generator(
+                query_string='',
+                set_query_parameters_value='_prop1=val1'
+        )
+        self.assertEqual(result, '_prop1=val1')
+
+
     def test_update_property(self):
         result = self.template_generator(
                 query_string='prop1=val2', 

@@ -162,6 +162,8 @@ def get_value(key, context):
         value = value.resolve(context)
     except template.VariableDoesNotExist:
         return key
+    except template.TemplateSyntaxError:
+        return key
     else:
         return value
 
