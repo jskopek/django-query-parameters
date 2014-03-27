@@ -16,20 +16,17 @@ def set_query_parameters(parser, token):
     {% set_query_parameters page=2 order=desc %} => page=2&limit=20&order=desc
     """
 
-    try:
-        key_value_pairs = token.split_contents()[1:]
-        key_value_dict = dict(key_value_pair.split('=') for key_value_pair in key_value_pairs)
-    except ValueError:
-        raise template.TemplateSyntaxError('%r tag requires arguments to be in `key=value` pairs' % token.contents.split()[0])
+    params = token.split_contents()[1:]
 
     # check to see if a special variable output key has been passed (default to `as`); 
     # if so, we will store the result in the context variable define by the value
     VARIABLE_OUTPUT_KEY = getattr(settings, 'QUERY_PARAMETERS_VARIABLE_OUTPUT_KEY', 'as')
-    if key_value_dict.get(VARIABLE_OUTPUT_KEY):
-        as_var = key_value_dict[VARIABLE_OUTPUT_KEY]
-        del key_value_dict[VARIABLE_OUTPUT_KEY]
-    else:
-        as_var = None
+    params, as_var = pluck_property(params, VARIABLE_OUTPUT_KEY)
+
+    try:
+        key_value_dict = dict(key_value_pair.split('=') for key_value_pair in params)
+    except ValueError:
+        raise template.TemplateSyntaxError('%r tag requires arguments to be in `key=value` pairs' % token.contents.split()[0])
 
     return QueryStringSetNode(key_value_dict, as_var)
 
@@ -83,13 +80,8 @@ def del_query_parameters(parser, token):
 
     # check to see if a special variable output key has been passed (default to `as`); 
     # if so, we will store the result in the context variable define by the value
-    as_var = None
     VARIABLE_OUTPUT_KEY = getattr(settings, 'QUERY_PARAMETERS_VARIABLE_OUTPUT_KEY', 'as')
-    for val in list(params):
-        match = re.match('%s=(\w+)' % VARIABLE_OUTPUT_KEY, val)
-        if match:
-            as_var = match.group(1)
-            params.pop(params.index(val))
+    params, as_var = pluck_property(params, VARIABLE_OUTPUT_KEY)
 
     return QueryStringDeleteNode(params, as_var)
 
@@ -152,5 +144,16 @@ def get_value(key, context):
     else:
         return value
 
+def pluck_property(params, property_key):
+    """
+    Searches a list of params for a `property_key=value` match. If one is found, it stores the value and removes from the list of params
+    Returns a tuple of (params, value). If no property_key is found, value is None. The returne params will be plucked of the match, if one is found
+    """
+    for val in list(params):
+        match = re.match('%s=(\w+)' % property_key, val)
+        if match:
+            params.pop(params.index(val))
+            return (params, match.group(1))
+    return (params, None)
 
 
