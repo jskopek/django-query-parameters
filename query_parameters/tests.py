@@ -32,6 +32,10 @@ class SetQueryParametersTestCase(TestCase):
         result = t.render(c)
         self.assertEqual(result, 'prop1=val1&prop2=val2')
 
+    def test_invalid_parameters(self):
+        from django.template import TemplateSyntaxError
+        self.assertRaises(TemplateSyntaxError, Template, '{% load query_parameters %}{% set_query_parameters prop1 %}')
+
     def test_multiple_new_properties(self):
         t = Template(
                 '{% load query_parameters %}'
@@ -43,5 +47,30 @@ class SetQueryParametersTestCase(TestCase):
         c = RequestContext(request)
         result = t.render(c)
         self.assertEqual(result, 'prop1=val1&prop2=val2&prop3=val3')
+
+    def test_update_property(self):
+        t = Template(
+                '{% load query_parameters %}'
+                '{% set_query_parameters prop1=val1 %}'
+            )
+        request = HttpRequest()
+        request.GET = QueryDict('prop1=val2')
+
+        c = RequestContext(request)
+        result = t.render(c)
+        self.assertEqual(result, 'prop1=val1')
+
+
+    def test_overwriting_properties(self):
+        t = Template(
+                '{% load query_parameters %}'
+                '{% set_query_parameters prop1=val1 prop1=val2 %}'
+            )
+        request = HttpRequest()
+        request.GET = QueryDict('prop1=val3')
+
+        c = RequestContext(request)
+        result = t.render(c)
+        self.assertEqual(result, 'prop1=val2')
 
 

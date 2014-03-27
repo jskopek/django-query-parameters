@@ -44,7 +44,9 @@ class QueryStringSetNode(template.Node):
     def render(self, context):
         query_string = get_query_string(context)
         existing_query_dict = QueryDict(query_string).copy()
-        existing_query_dict.update(self.contextual_parameter_dict(context))
+        for key, value in self.contextual_parameter_dict(context).items():
+            existing_query_dict[key] = value
+        #existing_query_dict.update(self.contextual_parameter_dict(context))
         return existing_query_dict.urlencode()
 
 # DELETING PARAMETERS
