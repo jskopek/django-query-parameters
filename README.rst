@@ -12,7 +12,8 @@ Takes a 1+ list of ``key=value`` pairs and generates an updated querystring that
 
     # current page is http://localhost/?page=1&limit=20
     {% load query_parameters %}
-    <a href="?{% set_query_parameters page=2 order=desc %}">...</a> # => <a href="?page=2&limit=20&order=desc">...</a>
+    <a href="?{% set_query_parameters page=2 order=desc %}">...</a> 
+    # => <a href="?page=2&limit=20&order=desc">...</a>
 
 del_query_parameters
 --------------------
@@ -21,4 +22,20 @@ Takes a 1+ list of keys and generates an updated querystring that removes those 
 
     # current page is http://localhost/?page=1&limit=20
     {% load query_parameters %}
-    <a href="?{% del_query_parameters page order %}">...</a> # => <a href="?limit=20">...</a>
+    <a href="?{% del_query_parameters page order %}">...</a> 
+    # => <a href="?limit=20">...</a>
+
+
+
+Installing
+==========
+
+Installing is a simple as running an ``easy_install`` or ``pip install`` command::
+
+    pip install django-query-parameters
+
+Include the project in the ``INSTALLED_APPS`` list in your project's ``settings.py`` file::
+
+    INSTALLED_APPS = (..., 'query_parameters', ...)
+
+
