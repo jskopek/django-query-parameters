@@ -45,7 +45,7 @@ Storing the output in the template context
 
 By default, both template tags output the result directly. If an optional ``as`` key is specified, the results will be stored in a context variable instead. For example::
 
-    {% set_query_parameters color=red as=next_page %}
+    {% set_query_parameters page=2 as=next_page %}
     <a href="?{{ next_page }}">Next Page</a>
     
     {% del_query_parameters color size as=reset_filters %}
@@ -59,3 +59,21 @@ The ``as`` key may be modified in Django's ``settings.py`` file::
     
     {% set_query_parameters color=red output=next_page %}
 
+
+
+Using a user defined query string
+=================================
+
+By default, both template tags pull the query string from the request context. If an optional ``with`` key is specified, the query string will be loaded from the context variable instead. For example::
+
+    {% set_query_parameters color=red as=filter %}
+    {% set_query_parameters size=large with=filter as=modified_filter %}
+    <a href="?{{ modified_filter }}">Apply Filter</a>
+
+The ``with`` key may be modified in Django's ``settings.py`` file::
+
+    QUERY_PARAMETERS_VARIABLE_INPUT_KEY = 'input'
+    
+    ...
+    
+    {% set_query_parameters color=red input=custom_querystring %}

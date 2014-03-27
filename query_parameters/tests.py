@@ -67,6 +67,33 @@ class SetQueryParametersTestCase(TestCase):
         self.assertEqual(result, '')
         self.assertEqual(c['result'], 'prop1=val1&prop2=val2')
 
+    def test_load_from_context(self):
+        t = Template(
+                '{% load query_parameters %}'
+                '{% set_query_parameters prop1=val1 with=existing_querystring %}'
+            )
+        request = HttpRequest()
+        request.GET = QueryDict('prop2=val2')
+
+        c = RequestContext(request, {'existing_querystring':'prop3=val3'})
+        result = t.render(c)
+        self.assertEqual(result, 'prop1=val1&prop3=val3')
+
+    def test_context_chaining(self):
+        t = Template(
+                '{% load query_parameters %}'
+                '{% set_query_parameters prop1=val1 as=result %}'
+                '{% set_query_parameters prop3=val3 with=result as=modified_result %}'
+            )
+        request = HttpRequest()
+        request.GET = QueryDict('prop2=val2')
+
+        c = RequestContext(request)
+        result = t.render(c)
+        self.assertEqual(result, '')
+        self.assertEqual(c['result'], 'prop1=val1&prop2=val2')
+        self.assertEqual(c['modified_result'], 'prop1=val1&prop2=val2&prop3=val3')
+
     def template_generator(self, query_string, set_query_parameters_value):
         """
         Helper method to simplify generating a template with a mock `query_string` and `set_query_parameters_value`
@@ -132,6 +159,18 @@ class DelQueryParametersTestCase(TestCase):
         result = t.render(c)
         self.assertEqual(result, '')
         self.assertEqual(c['a_result'], 'prop1=val1')
+
+    def test_load_from_context(self):
+        t = Template(
+                '{% load query_parameters %}'
+                '{% del_query_parameters prop1 with=existing_querystring %}'
+            )
+        request = HttpRequest()
+        request.GET = QueryDict('prop2=val2')
+
+        c = RequestContext(request, {'existing_querystring':'prop3=val3&prop1=val1'})
+        result = t.render(c)
+        self.assertEqual(result, 'prop3=val3')
 
     def template_generator(self, query_string, del_query_parameters_value):
         """

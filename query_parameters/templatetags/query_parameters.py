@@ -23,17 +23,23 @@ def set_query_parameters(parser, token):
     VARIABLE_OUTPUT_KEY = getattr(settings, 'QUERY_PARAMETERS_VARIABLE_OUTPUT_KEY', 'as')
     params, as_var = pluck_property(params, VARIABLE_OUTPUT_KEY)
 
+    # check to see if a special variable input key has been passed (default to `with`); 
+    # if so, we will pull the query string from the context variable defined by the value
+    VARIABLE_INPUT_KEY = getattr(settings, 'QUERY_PARAMETERS_VARIABLE_INPUT_KEY', 'with')
+    params, with_var = pluck_property(params, VARIABLE_INPUT_KEY)
+
     try:
         key_value_dict = dict(key_value_pair.split('=') for key_value_pair in params)
     except ValueError:
         raise template.TemplateSyntaxError('%r tag requires arguments to be in `key=value` pairs' % token.contents.split()[0])
 
-    return QueryStringSetNode(key_value_dict, as_var)
+    return QueryStringSetNode(key_value_dict, as_var, with_var)
 
 class QueryStringSetNode(template.Node):
-    def __init__(self, parameter_dict, as_var):
+    def __init__(self, parameter_dict, as_var, with_var):
         self.parameter_dict = parameter_dict
         self.as_var = as_var
+        self.with_var = with_var
 
     def contextual_parameter_dict(self, context):
         """
@@ -47,23 +53,27 @@ class QueryStringSetNode(template.Node):
 
         value_parameter_dict = {}
         for key, value in self.parameter_dict.items():
-            value_parameter_dict[get_value(key,context)] = get_value(value,context)
+            value_parameter_dict[get_value(key,context)] = get_value(value, context)
         return value_parameter_dict
 
     def render(self, context):
-        query_string = get_query_string(context)
+        # if we have been passed a querystring from the context, load it; otherwise, pull from the context
+        if self.with_var:
+            query_string = get_value(self.with_var, context)
+        else:
+            query_string = get_query_string(context)
+
         existing_query_dict = QueryDict(query_string).copy()
         for key, value in self.contextual_parameter_dict(context).items():
             existing_query_dict[key] = value
 
         result = existing_query_dict.urlencode()
 
+        # if we are storing result as a context property, do so and reutrn a blank string; otherwise, return the value
         if self.as_var:
-            # if we are storing result as a context property, do so and reutrn a blank string
             context[self.as_var] = result
             return ''
         else:
-            # ... otherwise return the value
             return result
 
 # DELETING PARAMETERS
@@ -83,12 +93,18 @@ def del_query_parameters(parser, token):
     VARIABLE_OUTPUT_KEY = getattr(settings, 'QUERY_PARAMETERS_VARIABLE_OUTPUT_KEY', 'as')
     params, as_var = pluck_property(params, VARIABLE_OUTPUT_KEY)
 
-    return QueryStringDeleteNode(params, as_var)
+    # check to see if a special variable input key has been passed (default to `with`); 
+    # if so, we will pull the query string from the context variable defined by the value
+    VARIABLE_INPUT_KEY = getattr(settings, 'QUERY_PARAMETERS_VARIABLE_INPUT_KEY', 'with')
+    params, with_var = pluck_property(params, VARIABLE_INPUT_KEY)
+
+    return QueryStringDeleteNode(params, as_var, with_var)
 
 class QueryStringDeleteNode(template.Node):
-    def __init__(self, parameter_delete_list, as_var):
+    def __init__(self, parameter_delete_list, as_var, with_var):
         self.parameter_delete_list = parameter_delete_list
         self.as_var = as_var
+        self.with_var = with_var
 
     def contextual_parameter_delete_list(self, context):
         """
@@ -103,7 +119,12 @@ class QueryStringDeleteNode(template.Node):
         return parameters
 
     def render(self, context):
-        query_string = get_query_string(context)
+        # if we have been passed a querystring from the context, load it; otherwise, pull from the context
+        if self.with_var:
+            query_string = get_value(self.with_var, context)
+        else:
+            query_string = get_query_string(context)
+
         existing_query_dict = QueryDict(query_string).copy()
         
         for parameter in self.contextual_parameter_delete_list(context):
