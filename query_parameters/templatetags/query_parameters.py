@@ -53,7 +53,7 @@ class QueryStringSetNode(template.Node):
 
         value_parameter_dict = {}
         for key, value in self.parameter_dict.items():
-            value_parameter_dict[get_value(key,context)] = get_value(value, context)
+            value_parameter_dict[key] = get_value(value, context)
         return value_parameter_dict
 
     def render(self, context):
