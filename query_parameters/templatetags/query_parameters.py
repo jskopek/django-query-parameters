@@ -3,6 +3,10 @@ from django.http import QueryDict
 from django.conf import settings
 import re
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
 register = template.Library()
 
 # SETTING PARAMETERS
