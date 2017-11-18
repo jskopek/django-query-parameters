@@ -1,11 +1,9 @@
+# -*- coding: utf-8 -*- 
+
 from django import template
 from django.http import QueryDict
 from django.conf import settings
 import re
-
-import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
 
 register = template.Library()
 
@@ -67,7 +65,8 @@ class QueryStringSetNode(template.Node):
         else:
             query_string = get_query_string(context)
 
-        existing_query_dict = QueryDict(query_string).copy()
+        existing_query_dict = QueryDict(query_string.encode('utf8')).copy()
+        
         for key, value in self.contextual_parameter_dict(context).items():
             existing_query_dict[key] = value
 

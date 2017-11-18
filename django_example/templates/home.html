@@ -3,6 +3,6 @@
 <h1>Testing Django-Query-Parameters</h1>
 
 {% with 'blah' as example_value %}
-<p>{% set_query_parameters hello=example_value this=thing asdf=no %}</p>
+<p>{% set_query_parameters hello=example_value this='ᛖᚴ ᚷᛖᛏ ᛖᛏᛁ ᚧ ᚷᛚᛖᚱ ᛘᚾ ᚦᛖᛋᛋ ᚨᚧ ᚡᛖ ᚱᚧᚨ ᛋᚨᚱ' asdf=no %}</p>
 <p>{% del_query_parameters test hello %}</p>
 {% endwith %}
