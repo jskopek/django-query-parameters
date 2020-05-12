@@ -3,6 +3,9 @@
 <h1>Testing Django-Query-Parameters</h1>
 
 {% with 'blah' as example_value %}
-<p>{% set_query_parameters hello=example_value this='ᛖᚴ ᚷᛖᛏ ᛖᛏᛁ ᚧ ᚷᛚᛖᚱ ᛘᚾ ᚦᛖᛋᛋ ᚨᚧ ᚡᛖ ᚱᚧᚨ ᛋᚨᚱ' asdf=no %}</p>
-<p>{% del_query_parameters test hello %}</p>
+<a href="?param4=test">Reload page with param4 querystring property</a>
+<p>overriding param1,param2,param3 querystring values: {% set_query_parameters param1=example_value param2='ᛖᚴ ᚷᛖᛏ ᛖᛏᛁ ᚧ ᚷᛚᛖᚱ ᛘᚾ ᚦᛖᛋᛋ ᚨᚧ ᚡᛖ ᚱᚧᚨ ᛋᚨᚱ' param3=no %}</p>
+<p>deleting param1,param2 querystring values: {% del_query_parameters param1 param2 %}</p>
+<p>overriding param1 with simple value: {% set_query_parameters param1=simple_variable %}
+<p>overriding param1 with dict value: {% set_query_parameters param1=dict_variable.hello %}
 {% endwith %}
