@@ -1,6 +1,6 @@
-from django.conf.urls import patterns, include, url
-from django.views.generic import TemplateView
+from django.urls import path
+from .views import TestView
 
-urlpatterns = patterns('',
-    url(r'^$', TemplateView.as_view(template_name='home.html')),
-)
+urlpatterns = [
+    path('', TestView.as_view()),
+]
