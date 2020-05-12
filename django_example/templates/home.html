@@ -3,9 +3,10 @@
 <h1>Testing Django-Query-Parameters</h1>
 
 {% with 'blah' as example_value %}
-<a href="?param4=test">Reload page with param4 querystring property</a>
-<p>overriding param1,param2,param3 querystring values: {% set_query_parameters param1=example_value param2='ᛖᚴ ᚷᛖᛏ ᛖᛏᛁ ᚧ ᚷᛚᛖᚱ ᛘᚾ ᚦᛖᛋᛋ ᚨᚧ ᚡᛖ ᚱᚧᚨ ᛋᚨᚱ' param3=no %}</p>
-<p>deleting param1,param2 querystring values: {% del_query_parameters param1 param2 %}</p>
-<p>overriding param1 with simple value: {% set_query_parameters param1=simple_variable %}
-<p>overriding param1 with dict value: {% set_query_parameters param1=dict_variable.hello %}
+<a href="?query4=test">Reload page with query4 querystring property</a>
+<p>overriding query1,query2,query3 querystring values: <pre>{% set_query_parameters query1=example_value query2='ᛖᚴ ᚷᛖᛏ ᛖᛏᛁ ᚧ ᚷᛚᛖᚱ ᛘᚾ ᚦᛖᛋᛋ ᚨᚧ ᚡᛖ ᚱᚧᚨ ᛋᚨᚱ' query3=no %}</pre></p>
+<p>deleting query1,query2 querystring values: <pre>{% del_query_parameters query1 query2 %}</pre></p>
+<p>overriding query1 with simple value: <pre>{% set_query_parameters query1=simple_variable %}</pre></p>
+<p>overriding query1 with dict value: <pre>{% set_query_parameters query1=dict_variable.hello %}</pre></p>
+<p>setting query5 to query4 querystring value: <pre>{% set_query_parameters query5=request.GET.query4 %}</pre></p>
 {% endwith %}
